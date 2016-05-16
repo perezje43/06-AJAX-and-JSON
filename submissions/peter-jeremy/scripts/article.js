@@ -42,22 +42,44 @@ Article.loadAll = function(dataWePassIn) {
 
 /* This function below will retrieve the data from either a local or remote
  source, process it, then hand off control to the View. */
+
 Article.fetchAll = function() {
   if (localStorage.hackerIpsum) {
-    console.log('this is the if statement');
-    parsedLocal = JSON.parse(localStorage.hackerIpsum);
-    Article.loadAll(parsedLocal);
-    articleView.initIndexPage();
-
-  } else {
-    $.getJSON('data/hackerIpsum.json', function(data) {
-      Article.loadAll(data);
-      localStorage.hackerIpsum = JSON.stringify(data);
-      articleView.initIndexPage();
+    $.ajax({
+      type: 'HEAD',
+      url: 'data/hackerIpsum.json',
+      success: function (data, message, xhr) {
+        var currentTag = xhr.getResponseHeader('eTag');
+        if (currentTag === JSON.parse(localStorage.eTag)) {
+          console.log('the same');
+          parsedLocal = JSON.parse(localStorage.hackerIpsum);
+          Article.loadAll(parsedLocal);
+          articleView.initIndexPage();
+        } else {
+          renderFromJSON();
+        }
+      }
     });
+  } else {
+    renderFromJSON();
   }
 };
 
+var renderFromJSON = function() {
+  $.getJSON('data/hackerIpsum.json', function(data) {
+    Article.loadAll(data);
+    localStorage.hackerIpsum = JSON.stringify(data);
+    articleView.initIndexPage();
+    $.ajax({
+      type: 'GET',
+      url: 'data/hackerIpsum.json',
+      success: function (data, message, xhr) {
+        var eTag = xhr.getResponseHeader('eTag');
+        localStorage.eTag = JSON.stringify(eTag);
+      }
+    });
+  });
+};
 /* Great work so far! STRETCH GOAL TIME! Refactor your fetchAll above, or
    get some additional typing practice here. Our main goal in this part of the
    lab will be saving the eTag located in Headers, to see if it's been updated!
