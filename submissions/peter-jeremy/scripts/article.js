@@ -48,7 +48,7 @@ Article.fetchAll = function() {
      1. We can process it by calling the .loadAll() method (started below),
      2. Then We can render the index page (using the proper method on the
         articleView object). */
-
+        console.log('this is the if statement');
     // Article.loadAll(//TODO: Process our localStorage!
     // Tip: Be careful when handling different data types between localStorage!
     // );
@@ -65,6 +65,11 @@ Article.fetchAll = function() {
       2. Store that same data in localStorage so we can skip the server call next time
 
       3. And then render the index page (What method was that?) */
+    $.getJSON('data/hackerIpsum.json', function(data) {
+      Article.loadAll(data);
+      localStorage.notQuiteHackerIpsum = data;
+      articleView.initIndexPage();
+    });
   }
 };
 
